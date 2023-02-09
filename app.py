@@ -1,5 +1,6 @@
-from flask import *
 import time
+from os import environ
+from flask import *
 
 app = Flask(__name__)
 
