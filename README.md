@@ -1,6 +1,6 @@
 # photoshare-backend
 
-### Steps To Setup
+## Steps To Setup
 #### 1. Clone the project like so:
   ```bash
   git clone https://github.com/likhity/photoshare-backend.git
@@ -41,7 +41,7 @@ As Step 4 says, everytime you start working on this project again, always first 
 source venv/Scripts/activate
 ```
 
-### Test The Project
+## Test The Project
 So you made some changes to the code and want to test it. Currently, we don't have a front-end setup to test if the backend is working correctly.
 
 You can use something like `curl` or `nc` to test the routes, but an easier way to do it is by using a tool called **Postman**.
