@@ -1,6 +1,6 @@
 # photoshare-backend
 
-Steps:
+Steps for setup:
 1. Clone the project like so:
 ```bash
 git clone https://github.com/likhity/photoshare-backend.git
@@ -13,9 +13,10 @@ cd photoshare-backend/
 ```bash
 python3 -m venv venv
 ```
-4. Install the necessary packages using `pip` (python's package manager, similar to `npm` for javascript). (This list will be updated as the project progresses)
+4. Install the necessary packages using `pip` (python's package manager, similar to `npm` for javascript).
 ```bash
 pip install flask
 pip install python-dotenv
 ```
+^ This list will be updated as the project progresses.
 5. Run `flask run` to start the server. It will start running on port 5000.
