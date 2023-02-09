@@ -24,7 +24,7 @@
   ```
   You must do this step every time you start working on this project again.
   
-#### 5. Install every package in packages.txt using `pip` (python's package manager, similar to `npm` for javascript).
+#### 5. Install all the necessary packages using `pip` (python's package manager, similar to `npm` for javascript).
   ```bash
   pip install flask
   pip install python-dotenv
