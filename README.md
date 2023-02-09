@@ -24,15 +24,15 @@
   ```
   You must do this step every time you start working on this project again.
   
-#### 5. Install every package in package.txt using `pip` (python's package manager, similar to `npm` for javascript).
+#### 5. Install every package in packages.txt using `pip` (python's package manager, similar to `npm` for javascript).
   ```bash
   pip install flask
   pip install python-dotenv
   pip install psycopg2-binary
   ```
-^ This list will probably grow as the project progresses. To make this easier, I created a bash script (packages.sh) that installs all the necessary packages in one go. Just run `bash packages.sh`.
+^ This list will probably grow as the project progresses. To make this easier, we will put the list of all the packages in packages.txt and just run `pip install -r packages.txt`.
 
-**IMPORTANT**: Everytime you install a new package for this project, add it to the list of packages in packages.sh.
+**IMPORTANT**: Everytime you install a new package for this project, add it to the list of packages in packages.txt. This way, if anyone else testing the code runs into an error because they don't have all the necessary packages, they can just run `pip install -r packages.txt` to fix the issue.
 
 #### 6. Run `flask run` to start the server. It will start running on port 5000.
   ```bash
