@@ -30,9 +30,11 @@
   pip install python-dotenv
   pip install psycopg2-binary
   ```
-^ This list will probably grow as the project progresses. To make this easier, we will put the list of all the packages in packages.txt and just run `pip install -r packages.txt`.
-
-**IMPORTANT**: Everytime you install a new package for this project, add it to the list of packages in packages.txt. This way, if anyone else testing the code runs into an error because they don't have all the necessary packages, they can just run `pip install -r packages.txt` to fix the issue.
+^ This list will probably grow as the project progresses. To make this easier, we will put the list of all the required packages in **requirements.txt** so you can just run the following command:
+```bash
+pip install -r requirements.txt
+```
+**IMPORTANT**: Everytime you install a new package for this project, add it to the list of packages in **requirements.txt**. This way, if anyone else testing the code runs into an error because they don't have all the necessary packages, they can just run `pip install -r requirements.txt` to fix the issue.
 
 #### 6. Run `flask run` to start the server. It will start running on port 5000.
   ```bash
