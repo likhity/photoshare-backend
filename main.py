@@ -1,7 +1,9 @@
 import os
 import psycopg2
+import jwt
 from dotenv import load_dotenv
-from flask import *
+from flask import request, Flask
+from functools import wraps
 
 # load_dotenv() loads all environment 
 # variables from .env file so we can
@@ -87,6 +89,24 @@ CREATE_TABLES = (
 with db_connection:
   with db_connection.cursor() as cursor:
     cursor.execute(CREATE_TABLES)
+    
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+
+def auth_required(func):
+  @wraps(func)
+  def decorated(*args, **kwargs):
+    token = request.cookies.get('jwt')
+        
+    if not token:
+      return "Unauthorized", 401
+    
+    try:
+      data = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+    except:
+      return "Unauthorized", 401
+    
+    return func(*args, **kwargs)
+  return decorated
 
 import routes.auth_routes
 import routes.friend_routes

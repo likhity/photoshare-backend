@@ -1,5 +1,6 @@
-from main import app, request, db_connection
-from werkzeug.utils import secure_filename
+from main import app, db_connection, auth_required
+from flask import request
+# from werkzeug.utils import secure_filename
 
 # TODO: PSB-6
 # @app.route("/api/upload", methods=["POST"])
