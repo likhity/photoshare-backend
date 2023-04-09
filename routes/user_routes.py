@@ -1,4 +1,4 @@
-from app import app, request, connection
+from main import app, request, db_connection
 
 # TODO: PSB-11
 

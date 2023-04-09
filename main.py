@@ -1,8 +1,6 @@
 import os
-import time
 import psycopg2
 from dotenv import load_dotenv
-from werkzeug.utils import secure_filename
 from flask import *
 
 # load_dotenv() loads all environment 
@@ -10,13 +8,14 @@ from flask import *
 # easily access them using os.getenv()
 load_dotenv()
 
+# create Flask app
 app = Flask(__name__)
+
 # get the DATABASE_URL environment variable that was stored in the .env file
 db_url = os.getenv('DATABASE_URL')
 # connect to database
-connection = psycopg2.connect(db_url)
+db_connection = psycopg2.connect(db_url)
 
-#### SQL QUERIES ####
 CREATE_TABLES = (
   """
   CREATE TABLE IF NOT EXISTS Users (
@@ -84,19 +83,14 @@ CREATE_TABLES = (
   );
   """
 )
-#### END OF SQL QUERIES ####
 
-with connection:
-  with connection.cursor() as cursor:
+with db_connection:
+  with db_connection.cursor() as cursor:
     cursor.execute(CREATE_TABLES)
 
-@app.route("/api/time")
-def get_current_time():
-  return { "time": time.time() }
-
-import auth_routes
-import friend_routes
-import photo_routes
-import album_routes
-import popular_routes
-import user_routes
+import routes.auth_routes
+import routes.friend_routes
+import routes.photo_routes
+import routes.album_routes
+import routes.popular_routes
+import routes.user_routes
