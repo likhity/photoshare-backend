@@ -16,24 +16,36 @@ def create_user():
     firstName = data["firstName"]
     lastName = data["lastName"]
     email = data["email"]
+    gender = data["gender"]
     homeTown = data["homeTown"]
     dateOfBirth = data["dateOfBirth"]
     password = data["password"]
     
+    # Every function in the bcrypt library only
+    # takes in and returns bytes, never strings.
+    # So we have to convert the strings to bytes to use bcrypt.
+    pw_bytes = bytes(password, 'utf-8')
+    
     # hash the password
-    hashed_password = bcrypt.hashpw(bytes(password, bcrypt.gensalt())).decode()
+    hash_bytes = bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
+    # bcrypt.hashpw() returns the hashed pw in bytes,
+    # so we must turn the bytes back into a string 
+    # that we can insert into database
+    hashed_password = hash_bytes.decode()
+    
+    print(len(hashed_password))
     
     INSERT_USER_QUERY = (
         """
-            INSERT INTO Users (firstName, lastName, email, homeTown, dateOfBirth, password)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO Users (firstName, lastName, email, homeTown, dateOfBirth, password, gender)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING userId;
         """
     )
     with db_connection:
         with db_connection.cursor() as cursor:
-            # insert the new user with the hashed password
-            cursor.execute(INSERT_USER_QUERY, (firstName, lastName, email, homeTown, dateOfBirth, hashed_password))
+            # insert the new user with the HASHED password
+            cursor.execute(INSERT_USER_QUERY, (firstName, lastName, email, homeTown, dateOfBirth, hashed_password, gender))
             userId = cursor.fetchone()[0]
     
     # A JWT is valid for 8 hours since first creation
