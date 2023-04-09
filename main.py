@@ -101,11 +101,11 @@ def auth_required(func):
             return "Unauthorized", 401
         
         try:
-            data = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+            decoded = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
         except:
             return "Unauthorized", 401
         
-        return func(*args, **kwargs)
+        return func(decoded, *args, **kwargs)
     
     return decorated
 
