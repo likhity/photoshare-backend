@@ -32,9 +32,7 @@ def create_user():
     # so we must turn the bytes back into a string 
     # that we can insert into database
     hashed_password = hash_bytes.decode()
-    
-    print(len(hashed_password))
-    
+        
     INSERT_USER_QUERY = (
         """
             INSERT INTO Users (firstName, lastName, email, homeTown, dateOfBirth, password, gender)
