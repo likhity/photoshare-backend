@@ -4,6 +4,7 @@ import jwt
 from dotenv import load_dotenv
 from flask import request, Flask
 from functools import wraps
+import inspect
 
 # load_dotenv() loads all environment 
 # variables from .env file so we can
@@ -105,8 +106,11 @@ def auth_required(func):
         except:
             return "Unauthorized", 401
         
-        return func(decoded, *args, **kwargs)
-    
+        if 'decoded_token' in inspect.signature(func).parameters:
+            return func(decoded, *args, **kwargs)
+        else:
+            return func(*args, **kwargs)
+
     return decorated
 
 import routes.auth_routes
