@@ -1,4 +1,9 @@
-from app import app, request, connection
+from main import app, request, db_connection
+import time
+
+@app.route("/api/time")
+def get_current_time():
+  return { "time": time.time() }
 
 @app.post('/api/register')
 def create_user():
@@ -16,8 +21,8 @@ def create_user():
       RETURNING userId;
     """
   )
-  with connection:
-    with connection.cursor() as cursor:
+  with db_connection:
+    with db_connection.cursor() as cursor:
       cursor.execute(INSERT_USER_QUERY, (firstName, lastName, email, homeTown, dateOfBirth, password))
       userId = cursor.fetchone()[0]
   return { "id": userId, "message": f"User {firstName} {lastName} created." }, 201
