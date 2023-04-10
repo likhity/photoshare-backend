@@ -1,5 +1,6 @@
 from main import app, db_connection, auth_required
 from flask import request, jsonify
+from datetime import date
 
 # TODO: PSB-8
 @app.get("/api/album")
@@ -25,5 +26,24 @@ def get_albums():
             result = cursor.fetchall() 
     return result
 # TODO: PSB-18
+@app.route("/api/create-album")
+@auth_required
+def create_album(decoded_token):
+    name = request.args.get("name")
+    ownerId = decoded_token["user"]
+    dateOfCreation = str(date.today())
+
+    INSERT_ALBUM_QUERY = """INSERT INTO Albums (AlbumName, ownerId, dateOfCreation) 
+    VALUES (%s, %s, %s);
+    RETURNING albumId;
+    """
+
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            # insert the new user with the HASHED password
+            cursor.execute(INSERT_ALBUM_QUERY, (AlbumName, ownerId, dateOfCreation,))
+            albumId = cursor.fetchone()[0]
+    
+    return jsonify({ "albumid": albumId, "message": "Album created." })
 
 # TODO: PSB-20
