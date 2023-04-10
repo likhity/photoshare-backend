@@ -39,6 +39,7 @@ CREATE_TABLES = (
         AlbumName VARCHAR(50) NOT NULL,
         ownerId serial,
         dateOfCreation DATE NOT NULL,
+        CONSTRAINT uc_Albums UNIQUE (ownerId, AlbumName),
         FOREIGN KEY (ownerId) REFERENCES Users(userId) ON DELETE CASCADE
     );
 
