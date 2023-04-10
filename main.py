@@ -47,7 +47,7 @@ CREATE_TABLES = (
         PhotoId serial PRIMARY KEY,
         caption VARCHAR(100) NOT NULL,
         albumId serial,
-        filePath VARCHAR(100) NOT NULL,
+        filePath VARCHAR(300) NOT NULL,
         FOREIGN KEY (albumId) REFERENCES Albums(albumId) ON DELETE CASCADE
     );
 
