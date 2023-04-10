@@ -1,5 +1,5 @@
 from main import app, db_connection, auth_required
-from flask import request
+from flask import request, jsonify
 
 # TODO: PSB-8
 @app.get("/api/album")
@@ -11,7 +11,7 @@ def get_album():
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_ALBUM_QUERY, (user, name,))
             result = cursor.fetchone()
-    return result
+    return jsonify(result)
 
 # TODO: PSB-9
 

@@ -1,5 +1,5 @@
 from main import app, db_connection, auth_required
-from flask import request
+from flask import request, jsonify
 # from werkzeug.utils import secure_filename
 
 # TODO: PSB-6
@@ -15,5 +15,15 @@ from flask import request
 # TODO: PSB-7
 
 # TODO: PSB-13
+@app.route("/api/photo")
+def get_photoInfo():
+    SELECT_PHOTO_QUERY = "SELECT * FROM Photos WHERE PhotoId = %s;"
+    photo = request.args.get("photoId")
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            cursor.execute(SELECT_PHOTO_QUERY, (photo,))
+            result = cursor.fetchone()
+    # print(result)
+    return jsonify(result)
 
 # TODO: PSB-21
