@@ -4,10 +4,9 @@ from flask import request
 # TODO: PSB-16
 @app.route("/api/suggested-friends", methods=['GET'])
 @auth_required
-def suggested_friends(data):
+def suggested_friends(decoded_token):
 
-    #need userId from app? or token
-    print(data)
+    # query for suggested friends
     SUGGESTED_FRIENDS_QUERY = (
         """
             SELECT friendId, COUNT(*) AS numFriends 
@@ -16,12 +15,14 @@ def suggested_friends(data):
                 (SELECT friendId FROM Friends WHERE userId = %s) 
                 GROUP BY friendId ORDER BY numFriends DESC;
         """)
-
+    
+    # execute query and retrieve all info related + return to frontend
     with db_connection:
         with db_connection.cursor() as cursor:
             # retrieve suggested friends (based on ids)
-            cursor.execute(SUGGESTED_FRIENDS_QUERY, ())
-            userId = cursor.fetchone()[0]
+            cursor.execute(SUGGESTED_FRIENDS_QUERY, (decoded_token["user"]))
+            suggested_friends_list = cursor.fetchall()
+    return suggested_friends_list
     
 # TODO: PSB-17
 
