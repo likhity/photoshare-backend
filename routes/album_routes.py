@@ -25,6 +25,7 @@ def get_albums():
             cursor.execute(SELECT_USER_QUERY, (s,))
             result = cursor.fetchall() 
     return result
+
 # TODO: PSB-18
 @app.route("/api/create-album")
 @auth_required
@@ -41,7 +42,7 @@ def create_album(decoded_token):
     with db_connection:
         with db_connection.cursor() as cursor:
             # insert the new user with the HASHED password
-            cursor.execute(INSERT_ALBUM_QUERY, (AlbumName, ownerId, dateOfCreation,))
+            cursor.execute(INSERT_ALBUM_QUERY, (name, ownerId, dateOfCreation,))
             albumId = cursor.fetchone()[0]
     
     return jsonify({ "albumid": albumId, "message": "Album created." })
