@@ -119,6 +119,12 @@ SELECT * FROM Photos WHERE Photos.albumId = Albums.albumId AND Albums.ownerId = 
 SELECT * FROM Albums WHERE ownerId = %s;
 
 
+--select all photos given ownerId
+SELECT * FROM Photos WHERE ownerId = %s;
+--select all photos given ownerId and tags
+SELECT * FROM Photos WHERE PhotoId IN (SELECT PhotoId FROM Tags WHERE ownerId = %s AND Tag = %s;
+
+
 
 --select album id
 SELECT 
