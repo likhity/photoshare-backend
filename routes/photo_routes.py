@@ -1,12 +1,53 @@
 from main import app, db_connection, auth_required
 from flask import request, jsonify
-# from werkzeug.utils import secure_filename
+import boto3
+import uuid
 
 # TODO: PSB-6
-# @app.route("/api/upload", methods=["POST"])
-# def fileUpload():
-#     file = request.files['file'] 
-#     filename = secure_filename(file.filename)
+@app.route("/api/upload", methods=["POST"])
+@auth_required
+def photo_upload(decoded_token):
+    userId = decoded_token['user']
+    
+    caption = request.args.get('caption')
+    albumName = request.args.get('albumName')
+    
+    uploaded_file = request.files['file']
+    filename = uploaded_file.filename
+    
+    def file_allowed(filename: str):
+        ALLOWED_EXTENSIONS = { 'png', 'jpg', 'gif' }
+        return '.' in filename and filename.rsplit('.')[1].lower() in ALLOWED_EXTENSIONS
+    
+    if not file_allowed(filename):
+        return "Invalid file.", 400
+    
+    new_filename = uuid.uuid4().hex + '.' + filename.rsplit('.')[1].lower()
+    s3 = boto3.resource("s3")
+    bucket_name = "photoshare-app"
+    s3.Bucket(bucket_name).upload_fileobj(uploaded_file, new_filename, ExtraArgs={ 'ACL': 'public-read' })
+    
+    INSERT_PHOTO = (
+        """
+        INSERT INTO Photos (albumId, caption, filePath)
+        VALUES ((SELECT albumId FROM Albums WHERE ownerId = %s AND AlbumName = %s), %s, %s)
+        RETURNING photoId, caption, albumId, filePath;
+        """
+    )
+    
+    url = "https://%s.s3.us-west-1.amazonaws.com/%s" % (bucket_name, new_filename)
+    
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            cursor.execute(INSERT_PHOTO, (userId, albumName, caption, url))
+            result = cursor.fetchone()
+    
+    return { 
+            "photoId": result[0], 
+            "caption": result[1], 
+            "albumId": result[2], 
+            "url": result[3]
+           }, 201
 
 # TODO: PSB-5
 @app.post("/api/like-photo")
