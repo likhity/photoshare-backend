@@ -47,7 +47,7 @@ CREATE_TABLES = (
         PhotoId serial PRIMARY KEY,
         caption VARCHAR(100) NOT NULL,
         albumId serial,
-        filePath VARCHAR(100) NOT NULL,
+        filePath VARCHAR(300) NOT NULL,
         FOREIGN KEY (albumId) REFERENCES Albums(albumId) ON DELETE CASCADE
     );
 
@@ -85,6 +85,12 @@ CREATE_TABLES = (
         FOREIGN KEY (friendId) REFERENCES Users(userId) ON DELETE CASCADE,
         PRIMARY KEY (userId, friendId)
     );
+        
+    SELECT setval('users_userid_seq', (SELECT MAX(userid) FROM Users));
+    SELECT setval('albums_albumid_seq', (SELECT MAX(albumId) FROM Albums));
+    SELECT setval('photos_photoid_seq', (SELECT MAX(photoid) FROM Photos));
+    SELECT setval('comments_commentid_seq', (SELECT MAX(commentid) FROM Comments));
+    SELECT setval('tags_tagid_seq', (SELECT MAX(tagid) FROM Tags));
     """
 )
 

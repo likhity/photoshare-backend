@@ -7,8 +7,7 @@ import bcrypt
 
 @app.route("/api/time")
 @auth_required
-def get_current_time(decoded_token):
-    print(decoded_token)
+def get_current_time():
     return { "time": time.time() }
 
 @app.post('/api/register')
