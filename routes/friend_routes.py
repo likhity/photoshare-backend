@@ -46,7 +46,7 @@ def friends():
     # query for getting all user friends
     GET_ALL_FRIENDS = (
         """
-            SELECT * 
+            SELECT userId, firstName, lastName 
             FROM Users 
             WHERE userId IN (SELECT friendId FROM Friends WHERE userId = %s);
         """)
@@ -60,4 +60,14 @@ def friends():
             # retrieve all friends
             cursor.execute(GET_ALL_FRIENDS, (userID))
             all_friends = cursor.fetchall()
-    return all_friends, 201
+
+
+    response = []
+    # we have retrived all info but only return userId, FName, LName
+    for x in all_friends:
+        new_object = {}
+        new_object['userId'] = x[0]
+        new_object['firstName'] = x[1]
+        new_object['lastName'] = x[2]
+        response.append(new_object)
+    return response, 200
