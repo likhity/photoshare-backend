@@ -35,7 +35,7 @@ def create_album(decoded_token):
     dateOfCreation = str(date.today())
 
     INSERT_ALBUM_QUERY = """INSERT INTO Albums (AlbumName, ownerId, dateOfCreation) 
-    VALUES (%s, %s, %s);
+    VALUES (%s, %s, %s)
     RETURNING albumId;
     """
 
