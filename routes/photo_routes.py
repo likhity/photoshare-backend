@@ -9,6 +9,24 @@ from flask import request, jsonify
 #     filename = secure_filename(file.filename)
 
 # TODO: PSB-5
+@app.post("/api/like-photo")
+@auth_required
+def like_photo(decoded_token):
+    photoId = request.args.get("photoId")
+    userId = decoded_token["user"]
+    
+    INSERT_LIKE_QUERY = """INSERT INTO Likes (userId, PhotoId) 
+    VALUES (%s, %s)
+    """
+
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            # insert the new user with the HASHED password
+            cursor.execute(INSERT_LIKE_QUERY, (userId, photoId,))
+    
+    return jsonify({ "message": "Succeeded." })
+
+
 
 # TODO: PSB-23
 
