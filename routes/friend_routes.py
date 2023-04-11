@@ -21,17 +21,15 @@ def add_friend(decoded_token):
     userID = decoded_token["user"]
     
     # get id of the person being added
-    data = request.get_json()
-    friendID = data["friendId"]
+    friendID = request.args.get("friendId")
 
     # get todays date
     current_day = datetime.date.today()                                 #2019-07-25
-    formatted_date = datetime.date.strftime(current_day, "%m/%d/%Y")    #07/25/2019
 
     # execute query and retrieve all info related + return to frontend
     with db_connection:
         with db_connection.cursor() as cursor:
             # retrieve suggested friends (based on ids)
-            cursor.execute(CREATE_FRIENDSHIP_QUERY, (userID, friendID, formatted_date))
-    return f"Friend { userID} added {friendID} was addedon {formatted_date}", 201
+            cursor.execute(CREATE_FRIENDSHIP_QUERY, (userID, friendID, current_day))
+    return f"Friend { userID} added {friendID} was addedon {str(current_day)}"
 # TODO: PSB-19
