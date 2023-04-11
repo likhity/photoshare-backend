@@ -41,7 +41,16 @@ def get_photoInfo():
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_PHOTO_QUERY, (photo,))
             result = cursor.fetchone()
-    # print(result)
-    return jsonify(result)
+    
+    response = []
+    new_element = {}
+    new_element["photoId"] = result[0]
+    new_element["albumName"] = result[1]
+    new_element["albumId"] = result[2]
+    new_element["URL"] = result[3]
+    response.append(new_element)
+
+    return response
+    
 
 # TODO: PSB-21
