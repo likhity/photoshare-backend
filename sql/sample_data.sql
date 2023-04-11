@@ -26,18 +26,18 @@ VALUES
 (10,'Awwwwww',4,'2022-05-06'),
 (11,'Seattle',11,'2022-03-18');
 
-INSERT INTO Photos (PhotoId,caption,albumId,filePath)
+INSERT INTO Photos (PhotoId,caption,albumId,dateOfCreation,filePath)
 VALUES
-(1,'My Dog is cute!',10,'https://media-be.chewy.com/wp-content/uploads/2022/09/27095535/cute-dogs-pembroke-welsh-corgi.jpg'),
-(2,'To be or not to be',5,'https://i.ytimg.com/vi/nuH4EHB2eiA/maxresdefault.jpg'),
-(3,'Berlin is a cool place',2,'https://compote.slate.com/images/21e6a1b3-858d-436d-b9ff-f7057e8cc690.jpg'),
-(4,'Space shuttle',11,'https://cdn.britannica.com/91/72291-004-BAE955B3/space-shuttle-Endeavour-landing-Edwards-Air-Force-May-2000.jpg'),
-(5,'Biking and hiking',7,'https://h5d9a9f8.rocketcdn.me/wp-content/uploads/2017/09/hike-a-bike-4.jpg'),
-(6,'Aladdin flying carpet',9,'https://cdn.nazmiyalantiquerugs.com/wp-content/uploads/2016/05/flying-magic-carpets-of-aladdin-nazmiyal-antique-rugs-599x449.jpg'),
-(7,'I love ice cream',8,'https://t3.ftcdn.net/jpg/04/43/73/58/360_F_443735896_QLONgfc1LdfAlgJXMeMJrwLFjBhdj6t1.jpg'),
-(8,'Chillin with da homies',3,'https://i.redd.it/l7d6nvd0nk261.jpg'),
-(9,'My cat is so cute',4,'https://images.unsplash.com/photo-1529778873920-4da4926a72c2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8Y3V0ZSUyMGNhdHxlbnwwfHwwfHw%3D&w=1000&q=80'),
-(10,'I love democracy, I love the Republic',5,'https://wompampsupport.azureedge.net/fetchimage?siteId=7575&v=2&jpgQuality=100&width=700&url=https%3A%2F%2Fi.kym-cdn.com%2Fentries%2Ficons%2Ffacebook%2F000%2F028%2F497%2Fpalp.jpg');
+(1,'My Dog is cute!',10,'2021-11-18','https://media-be.chewy.com/wp-content/uploads/2022/09/27095535/cute-dogs-pembroke-welsh-corgi.jpg'),
+(2,'To be or not to be',5,'2023-11-18','https://i.ytimg.com/vi/nuH4EHB2eiA/maxresdefault.jpg'),
+(3,'Berlin is a cool place',2,'2022-11-18','https://compote.slate.com/images/21e6a1b3-858d-436d-b9ff-f7057e8cc690.jpg'),
+(4,'Space shuttle',11,'2019-11-18','https://cdn.britannica.com/91/72291-004-BAE955B3/space-shuttle-Endeavour-landing-Edwards-Air-Force-May-2000.jpg'),
+(5,'Biking and hiking',7,'2018-11-18','https://h5d9a9f8.rocketcdn.me/wp-content/uploads/2017/09/hike-a-bike-4.jpg'),
+(6,'Aladdin flying carpet',9,'2020-11-18','https://cdn.nazmiyalantiquerugs.com/wp-content/uploads/2016/05/flying-magic-carpets-of-aladdin-nazmiyal-antique-rugs-599x449.jpg'),
+(7,'I love ice cream',8,'2017-11-18','https://t3.ftcdn.net/jpg/04/43/73/58/360_F_443735896_QLONgfc1LdfAlgJXMeMJrwLFjBhdj6t1.jpg'),
+(8,'Chillin with da homies',3,'2016-11-18','https://i.redd.it/l7d6nvd0nk261.jpg'),
+(9,'My cat is so cute',4,'2015-11-18','https://images.unsplash.com/photo-1529778873920-4da4926a72c2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8Y3V0ZSUyMGNhdHxlbnwwfHwwfHw%3D&w=1000&q=80'),
+(10,'I love democracy, I love the Republic',5,'2014-11-18','https://wompampsupport.azureedge.net/fetchimage?siteId=7575&v=2&jpgQuality=100&width=700&url=https%3A%2F%2Fi.kym-cdn.com%2Fentries%2Ficons%2Ffacebook%2F000%2F028%2F497%2Fpalp.jpg');
 
 INSERT INTO Comments (CommentId,CommentText,commenterId,PhotoId,dateOfCreation)
 VALUES
