@@ -57,7 +57,20 @@ def get_photos():
                 cursor.execute(ALL_PHOTO_QUERIES)
                 all_photos = cursor.fetchall()
         
-        return all_photos, 200
+        response = []
+
+        for x in  all_photos:
+
+            new_object = {}
+            new_object['photoId'] = x[0]
+            new_object['caption'] = x[1]
+            new_object['albumId'] = x[2]
+            new_object['filepath'] = x[3]
+            new_object['dateOfCreation'] = x[4]
+            response.append(new_object)
+
+
+        return response, 200
     
 #ALL PHOTOS
 
