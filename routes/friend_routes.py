@@ -14,7 +14,7 @@ def add_friend(decoded_token):
     CREATE_FRIENDSHIP_QUERY = (
         """
             INSERT INTO Friends (userId, friendId, dateOfFriendship)
-            VALUES (%s, %s, 'yyyy-mm-dd');
+            VALUES (%s, %s, %s);
         """)
     
     # get userID from token
@@ -31,5 +31,6 @@ def add_friend(decoded_token):
         with db_connection.cursor() as cursor:
             # retrieve suggested friends (based on ids)
             cursor.execute(CREATE_FRIENDSHIP_QUERY, (userID, friendID, current_day))
-    return f"Friend { userID} added {friendID} was addedon {str(current_day)}"
+
+    return  f"{userID} added Friend {friendID} was added on {current_day}", 201
 # TODO: PSB-19
