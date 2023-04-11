@@ -27,7 +27,7 @@ def get_albums():
     return result
 
 # TODO: PSB-18
-@app.route("/api/create-album")
+@app.route("/api/create-album", methods=["POST"])
 @auth_required
 def create_album(decoded_token):
     name = request.args.get("name")
