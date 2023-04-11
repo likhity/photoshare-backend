@@ -18,13 +18,22 @@ def get_album():
 
 @app.get("/api/albums")
 def get_albums():
-    SELECT_USER_QUERY = "SELECT * FROM Albums WHERE ownerId = %s"
+    SELECT_USER_QUERY = "SELECT albumId, AlbumName, dateOfCreation FROM Albums WHERE ownerId = %s"
     s = request.args.get("userId")
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_USER_QUERY, (s,))
-            result = cursor.fetchall() 
-    return result
+            db_result = cursor.fetchall() 
+    
+    response = []
+    for x in db_result:
+        new_element = {}
+        new_element["albumId"] = x[0]
+        new_element["albumName"] = x[1]
+        new_element["dateOfCreation"] = x[2]
+        response.append(new_element)
+
+    return response
 
 # TODO: PSB-18
 @app.route("/api/create-album", methods=["POST"])
