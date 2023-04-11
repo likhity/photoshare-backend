@@ -1,5 +1,5 @@
 from main import app, db_connection, auth_required
-from flask import request
+from flask import request, jsonify
 
 # TODO: PSB-16
 @app.route("/api/suggested-friends", methods=['GET'])
@@ -9,20 +9,31 @@ def suggested_friends(decoded_token):
     # query for suggested friends
     SUGGESTED_FRIENDS_QUERY = (
         """
-            SELECT friendId, COUNT(*) AS numFriends 
-            FROM Friends 
-            WHERE userId IN 
-                (SELECT friendId FROM Friends WHERE userId = %s) 
-                GROUP BY friendId ORDER BY numFriends DESC;
+        SELECT result.userId, firstName, lastName FROM Users
+        JOIN
+        (SELECT friendId as userId, COUNT(*) AS numFriends FROM Friends WHERE userId IN (SELECT friendId FROM Friends WHERE userId = 5) GROUP BY friendId ORDER BY numFriends DESC) AS result
+        ON Users.userId = result.userid
+        ORDER BY result.numFriends DESC;
         """)
     
     # execute query and retrieve all info related + return to frontend
     with db_connection:
         with db_connection.cursor() as cursor:
             # retrieve suggested friends (based on ids)
-            cursor.execute(SUGGESTED_FRIENDS_QUERY, (decoded_token["user"]))
+            cursor.execute(SUGGESTED_FRIENDS_QUERY, (decoded_token["user"],))
             suggested_friends_list = cursor.fetchall()
-    return suggested_friends_list
+
+
+    response = []
+
+    for x in suggested_friends_list:
+        new_object = {}
+        new_object['userId'] = x[0]
+        new_object['firstName'] = x[1]
+        new_object['lastName'] = x[2]
+        response.append(new_object)
+
+    return response
     
 # TODO: PSB-17
 
