@@ -41,7 +41,6 @@ def create_album(decoded_token):
 
     with db_connection:
         with db_connection.cursor() as cursor:
-            # insert the new user with the HASHED password
             cursor.execute(INSERT_ALBUM_QUERY, (name, ownerId, dateOfCreation,))
             albumId = cursor.fetchone()[0]
     
