@@ -45,7 +45,7 @@ def get_photoInfo():
     response = []
     new_element = {}
     new_element["photoId"] = result[0]
-    new_element["albumName"] = result[1]
+    new_element["caption"] = result[1]
     new_element["albumId"] = result[2]
     new_element["URL"] = result[3]
     response.append(new_element)
