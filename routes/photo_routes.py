@@ -136,7 +136,7 @@ def get_photos():
         tags_array = all_tags.split(",")
 
         # add "OR Tag = %s" for each other additional tag
-        for x in len(tags_array) - 1:
+        for x in range(len(tags_array) - 1):
             TAG_QUERY = TAG_QUERY + " OR Tag = %s"  
 
         TAG_QUERY += ");"                   #add the ");"" for the query 
@@ -146,8 +146,20 @@ def get_photos():
                 # retrieve all photos with given tags
                 cursor.execute(TAG_QUERY, tags_array)
                 all_photos_given_tags = cursor.fetchall()
+
+        response = []
+
+        for x in  all_photos_given_tags:
+
+            new_object = {}
+            new_object['photoid'] = x[0]
+            new_object['caption'] = x[1]
+            new_object['albumId'] = x[2]
+            new_object['filepath'] = x[3]
+            new_object['dateOfCreation'] = x[4]
+            response.append(new_object)
         
-        return all_photos_given_tags, 200
+        return response, 200
 #TAG(S) && NO USERID
 
 
