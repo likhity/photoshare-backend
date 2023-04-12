@@ -211,18 +211,32 @@ def get_photos():
     # if we have a userId & albumName
     if userId is not None and albumName is not None:
         USERID_AND_ALBUMNAME_QUERY = """
-            SELECT * 
-            FROM Photos 
-            WHERE albumId IN (SELECT albumId FROM Albums WHERE ownerId = %s AND albumId = %s);
-            """
+        SELECT *
+        FROM photos p
+        INNER JOIN albums a ON p.albumid = a.albumid
+        INNER JOIN users u ON a.ownerid = u.userid
+        WHERE a.albumname = %s AND u.userid = %s;"""
+
         
         with db_connection:
             with db_connection.cursor() as cursor:
                 # retrieve all photos with given tags
-                cursor.execute(USERID_AND_ALBUMNAME_QUERY, (userId, albumName))
+                cursor.execute(USERID_AND_ALBUMNAME_QUERY, (albumName, userId))
                 all_photos_given_albumName_and_userId = cursor.fetchall()
         
-        return all_photos_given_albumName_and_userId, 200
+
+        #create appropriate response
+        response = []
+        for x in  all_photos_given_albumName_and_userId:
+            new_object = {}
+            new_object['photoid'] = x[0]
+            new_object['caption'] = x[1]
+            new_object['albumId'] = x[2]
+            new_object['filepath'] = x[3]
+            new_object['dateOfCreation'] = x[4]
+            response.append(new_object)
+        
+        return response, 200
 #ALBUM NAME AND USERID
 
     #default (ERR)
