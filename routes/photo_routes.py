@@ -125,24 +125,23 @@ def get_photos():
     if all_tags and userId is None:
 
         # we have at least 1 tag so we make base query
-        TAG_QUERY = """
-                SELECT * 
-                FROM Photos 
-                WHERE PhotoId IN (SELECT PhotoId FROM Tags WHERE Tag = %s"""
+        TAG_QUERY = (
+            """
+            SELECT DISTINCT Photos.*, COUNT(Tags.Tag) as MatchedTags
+            FROM Photos
+            JOIN Tags ON Tags.PhotoId = Photos.photoId
+            WHERE Tags.Tag = ANY(%s)
+            GROUP BY Photos.photoId
+            ORDER BY MatchedTags DESC;
+            """)
         
         # get all tags into tags_array
         tags_array = all_tags.split(",")
 
-        # add "OR Tag = %s" for each other additional tag
-        for x in range(len(tags_array) - 1):
-            TAG_QUERY = TAG_QUERY + " OR Tag = %s"  
-
-        TAG_QUERY += ");"                   #add the ");"" for the query 
-
         with db_connection:
             with db_connection.cursor() as cursor:
                 # retrieve all photos with given tags
-                cursor.execute(TAG_QUERY, tags_array)
+                cursor.execute(TAG_QUERY, (tags_array,))
                 all_photos_given_tags = cursor.fetchall()
 
         response = []
