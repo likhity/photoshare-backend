@@ -84,20 +84,37 @@ def get_photos():
     if userId is not None and len(request.args) == 1:
 
         #query for all photos given userId
+        #query needs to join album and photos and get owner id from album
         ALL_PHOTO_GIVEN_ID_QUERY = """
             SELECT * 
             FROM Photos 
-            WHERE ownerId = %s;
+            WHERE albumId IN 
+                (SELECT albumId 
+                 FROM Albums 
+                 WHERE ownerId = %s);
             """  
         
         #execute query w/userId and return
         with db_connection:
             with db_connection.cursor() as cursor:
                 # retrieve ALL photos given userId
-                cursor.execute(ALL_PHOTO_GIVEN_ID_QUERY, userId)
+                cursor.execute(ALL_PHOTO_GIVEN_ID_QUERY, (userId,))
                 all_photos_given_Id = cursor.fetchall()
+
         
-        return all_photos_given_Id, 200
+        response = []
+
+        for x in  all_photos_given_Id:
+
+            new_object = {}
+            new_object['photoid'] = x[0]
+            new_object['caption'] = x[1]
+            new_object['albumId'] = x[2]
+            new_object['filepath'] = x[3]
+            new_object['dateOfCreation'] = x[4]
+            response.append(new_object)
+        
+        return response, 200
 #ONLY USERID
 
 
