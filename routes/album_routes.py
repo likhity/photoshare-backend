@@ -1,6 +1,7 @@
 from main import app, db_connection, auth_required
 from flask import request, jsonify
 from datetime import date
+import boto3
 
 # TODO: PSB-8
 @app.get("/api/album")
@@ -63,3 +64,43 @@ def create_album(decoded_token):
     return jsonify({ "albumid": albumId, "message": "Album created." })
 
 # TODO: PSB-20
+@app.delete("/api/album")
+@auth_required
+def delete_album(decoded_token):
+    userId = decoded_token['user']
+    albumName = request.args.get("albumName")
+    
+    SELECT_PHOTO = (
+        """
+        SELECT filePath FROM Photos 
+        WHERE albumId IN (SELECT albumId FROM Albums WHERE ownerId = %s AND AlbumName = %s)
+        AND filePath LIKE '%%photoshare-app%%';
+        """
+    )
+    
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            cursor.execute(SELECT_PHOTO, (userId, albumName))
+            photos_to_delete = cursor.fetchall()
+    
+    s3 = boto3.client("s3")
+    bucket_name = "photoshare-app"
+    
+    for record in photos_to_delete:
+        filename = record[0].split('/')[-1]
+        s3.delete_object(
+            Bucket=bucket_name,
+            Key=filename
+        )
+    
+    DELETE_ALBUM = (
+        """
+        DELETE FROM Albums WHERE ownerId = %s AND AlbumName = %s;
+        """
+    )
+    
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            cursor.execute(DELETE_ALBUM, (userId, albumName))
+    
+    return { "message": "Album deleted successfully." }
