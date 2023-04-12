@@ -36,8 +36,6 @@ def like_photo(decoded_token):
 # no need for authentication
 def get_photos():
 
-
-
 #ALL PHOTOS
 
     #if we have no params.
@@ -168,28 +166,42 @@ def get_photos():
 
 
 #TAGS && USERID
-    #if we have tags and a userId
+    #if we have tags and a userId           #note: userId can be currentUser or another user's 
     if all_tags and userId is not None:
-        TAG_PLUS_USERID_QUERY = """
-            SELECT * 
-            FROM Photos 
-            WHERE ownerId = %s AND PhotoId IN (SELECT PhotoId FROM Tags WHERE Tag = %s"""
+        TAG_PLUS_USERID_QUERY = (
+
+            # query returns photos that have the most matched tags on top (DESC) and match given userId
+            """
+            SELECT Photos.*, COUNT(Tags.Tag) as MatchedTags
+            FROM Photos
+            JOIN Albums ON Albums.albumId = Photos.albumId
+            JOIN Tags ON Tags.PhotoId = Photos.photoId
+            WHERE Albums.ownerId = %s
+            AND Tags.Tag = ANY(%s)
+            GROUP BY Photos.photoId
+            ORDER BY MatchedTags DESC;""")
         
+        # get array of tags to search
         tags_array = all_tags.split(",")
-
-        # add "OR Tag = %s" for each other additional tag
-        for x in len(tags_array) - 1:
-            TAG_PLUS_USERID_QUERY = TAG_PLUS_USERID_QUERY + " OR Tag = %s"  
-
-        TAG_PLUS_USERID_QUERY += ");"                   #add the ");"" for the query 
 
         with db_connection:
             with db_connection.cursor() as cursor:
-                # retrieve all photos with given tags
+                # retrieve all photos with given tags and userId
                 cursor.execute(TAG_PLUS_USERID_QUERY, (userId, tags_array))
                 all_photos_given_tags_and_userId = cursor.fetchall()
         
-        return all_photos_given_tags_and_userId, 200
+        #create appropriate response
+        response = []
+        for x in  all_photos_given_tags_and_userId:
+            new_object = {}
+            new_object['photoid'] = x[0]
+            new_object['caption'] = x[1]
+            new_object['albumId'] = x[2]
+            new_object['filepath'] = x[3]
+            new_object['dateOfCreation'] = x[4]
+            response.append(new_object)
+        
+        return response, 200
 #TAGS && USERID
 
 
