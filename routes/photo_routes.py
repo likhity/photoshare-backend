@@ -95,3 +95,46 @@ def get_photoInfo():
     
 
 # TODO: PSB-21
+@app.delete("/api/photo")
+@auth_required
+def delete_photo(decoded_token):
+    userId = decoded_token['user']
+    photoId = request.args.get('photoId')
+    
+    SELECT_PHOTO = (
+        """
+        SELECT filePath FROM Photos 
+        WHERE albumId IN (SELECT albumId FROM Albums WHERE ownerId = %s) 
+        AND photoId = %s;
+        """
+    )
+    
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            cursor.execute(SELECT_PHOTO, (userId, photoId))
+            result = cursor.fetchone()
+    
+    if not result:
+        return { "message": f"Failed. You do not own the photo with id {photoId}." }, 400
+    
+    filename = result[0].split('/')[-1]
+    
+    s3 = boto3.client("s3")
+    bucket_name = "photoshare-app"
+    s3.delete_object(
+        Bucket=bucket_name,
+        Key=filename
+    )
+    
+    DELETE_PHOTO = (
+        """
+        DELETE FROM Photos WHERE photoId = %s
+        """
+    )
+    
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            cursor.execute(DELETE_PHOTO, (photoId,))
+            
+    return { "message": "Photo deleted successfully." }
+    
