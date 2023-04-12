@@ -35,12 +35,18 @@ def photo_upload(decoded_token):
         """
     )
     
+    UPDATE_CONTRIBUTION = (
+        "UPDATE Users SET contribution = contribution + 1 WHERE userId = %s"
+    )
+    
     url = "https://%s.s3.us-west-1.amazonaws.com/%s" % (bucket_name, new_filename)
     
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(INSERT_PHOTO, (userId, albumName, caption, url))
             result = cursor.fetchone()
+            # update the user's contribution score
+            cursor.execute(UPDATE_CONTRIBUTION, (userId,))
     
     return { 
             "photoId": result[0], 
