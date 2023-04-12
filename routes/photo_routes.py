@@ -348,6 +348,7 @@ def delete_photo(decoded_token):
     
     s3 = boto3.client("s3")
     bucket_name = "photoshare-app"
+    
     s3.delete_object(
         Bucket=bucket_name,
         Key=filename
@@ -355,13 +356,14 @@ def delete_photo(decoded_token):
     
     DELETE_PHOTO = (
         """
-        DELETE FROM Photos WHERE photoId = %s
+        DELETE FROM Photos WHERE photoId = %s;
+        UPDATE Users SET contribution = contribution - 1 WHERE userId = %s;
         """
     )
     
     with db_connection:
         with db_connection.cursor() as cursor:
-            cursor.execute(DELETE_PHOTO, (photoId,))
+            cursor.execute(DELETE_PHOTO, (photoId, userId))
             
     return { "message": "Photo deleted successfully." }
     
