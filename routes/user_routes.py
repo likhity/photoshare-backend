@@ -14,4 +14,14 @@ def get_user_info():
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_USER_QUERY, (user,))
             result = cursor.fetchone()
-    return jsonify(result)
+
+    new_element = {}
+    new_element["userId"] = result[0]
+    new_element["firstName"] = result[1]
+    new_element["lastName"] = result[2]
+    new_element["email"] = result[3]
+    new_element["hometown"] = result[4]
+    new_element["dateOfBirth"] = result[5]
+    new_element["gender"] = result[7]
+    new_element["contribution"] = result[8]
+    return new_element
