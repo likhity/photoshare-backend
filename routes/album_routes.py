@@ -13,14 +13,12 @@ def get_album():
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_ALBUM_QUERY, (user, name,))
             result = cursor.fetchone()
-    response = []
     new_element = {}
     new_element["albumId"] = result[0]
     new_element["albumName"] = result[1]
     new_element["dateOfCreation"] = result[2]
-    response.append(new_element)
 
-    return response
+    return new_element
 
 # TODO: PSB-9
 
