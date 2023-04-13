@@ -2,6 +2,7 @@ from main import app, db_connection, auth_required
 from flask import request, jsonify
 import boto3
 import uuid
+import datetime
 
 # TODO: PSB-6
 @app.route("/api/upload", methods=["POST"])
@@ -76,7 +77,26 @@ def like_photo(decoded_token):
 
 
 # TODO: PSB-23
+@app.route("/api/add-comment", methods=['POST'])
+@auth_required
+def add_comment(decoded_token):
+    data = request.get_json()
+    photoId = data["photoId"]
+    userId = decoded_token["user"]
+    comment = data["comment"]
+    current_day = datetime.date.today()  
+    INSERT_COMMENT_QUERY = """INSERT INTO Comments (CommentText, commenterId, PhotoId, dateOfCreation) VALUES (%s, %s, %s, %s);
+    """
+    UPDATE_CONTRIBUTION = """UPDATE Users SET contribution = contribution + 1 WHERE userId = %s;
+    """
 
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            # insert the new user with the HASHED password
+            cursor.execute(INSERT_COMMENT_QUERY, (comment, userId, photoId, current_day,))
+            cursor.execute(UPDATE_CONTRIBUTION, (userId,))
+    
+    return jsonify({ "message": "Succeeded." })
 # TODO: PSB-7
 
 @app.route("/api/photos", methods=['GET'])
