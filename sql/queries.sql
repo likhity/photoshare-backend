@@ -154,7 +154,7 @@ SELECT * FROM Photos WHERE PhotoId IN (SELECT PhotoId FROM Tags WHERE Tag = %s) 
 --select all photos with a specific tag
 SELECT * FROM Photos WHERE PhotoId IN (SELECT PhotoId FROM Tags WHERE Tag = %s);
 --select most popular tags
-
+SELECT Tag, COUNT(*) FROM Tags GROUP BY Tag ORDER BY COUNT(*) DESC LIMIT 50;
 --search all user's photos that have multiple tags
 SELECT * FROM Photos WHERE PhotoId IN (SELECT PhotoId FROM Tags GROUP BY PhotoId HAVING COUNT(*) > 1) AND Photos.albumId = Albums.albumId AND Albums.ownerId = %s;
 
