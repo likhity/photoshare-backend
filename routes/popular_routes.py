@@ -32,3 +32,37 @@ def most_popular_tags():
 # TODO: PSB-11
 
 # TODO: PSB-12
+@app.route("/api/photo-recommendations", methods=['GET'])
+@auth_required
+def photo_recommendations(decoded_token):
+    # query for photo recommendations
+    ownerID = decoded_token["user"]
+    PHOTO_RECOMMENDATIONS_QUERY = (
+        """
+        SELECT *
+        FROM Photos
+        WHERE PhotoId IN (SELECT photoID FROM
+        (SELECT PhotoId, COUNT(*) AS numTags 
+        FROM Tags 
+        WHERE Tag IN (SELECT Tag FROM Tags WHERE PhotoId IN (SELECT PhotoId FROM Photos WHERE albumId IN (SELECT albumId FROM Albums WHERE ownerId = %s))) GROUP BY PhotoId ORDER BY numTags DESC LIMIT 5) AS result)
+        """)
+    
+    # execute query and retrieve all info related + return to frontend
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            # retrieve photo recommendations
+            cursor.execute(PHOTO_RECOMMENDATIONS_QUERY, (decoded_token["user"],))
+            photo_recommendations_list = cursor.fetchall()
+
+    response = []
+
+    for x in photo_recommendations_list:
+        new_object = {}
+        new_object['photoId'] = x[0]
+        new_object['caption'] = x[1]
+        new_object['albumId'] = x[2]
+        new_object['filepath'] = x[3]
+        new_object['dateOfCreation'] = x[4]
+        response.append(new_object)
+
+    return response
