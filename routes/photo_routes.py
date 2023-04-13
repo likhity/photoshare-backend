@@ -367,3 +367,25 @@ def delete_photo(decoded_token):
             
     return { "message": "Photo deleted successfully." }
     
+# TODO: PSB-24
+@app.get("/api/comments")
+def get_comments():
+    SELECT_PHOTO_QUERY = "SELECT * FROM Comments WHERE photoId = %s"
+    s = request.args.get("photoId")
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            cursor.execute(SELECT_PHOTO_QUERY, (s,))
+            db_result = cursor.fetchall() 
+    
+    response = []
+    for x in db_result:
+        new_element = {}
+        new_element["CommentId"] = x[0]
+        new_element["CommentText"] = x[1]
+        new_element["commenterId"] = x[2]
+        new_element["PhotoId"] = x[3]
+        new_element["dateOfCreation"] = x[4]
+        response.append(new_element)
+
+    return response
+
