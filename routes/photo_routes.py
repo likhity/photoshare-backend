@@ -419,12 +419,21 @@ def delete_photo(decoded_token):
 # TODO: PSB-24
 @app.get("/api/comments")
 def get_comments():
-    SELECT_PHOTO_QUERY = "SELECT * FROM Comments WHERE photoId = %s"
-    s = request.args.get("photoId")
-    with db_connection:
-        with db_connection.cursor() as cursor:
-            cursor.execute(SELECT_PHOTO_QUERY, (s,))
-            db_result = cursor.fetchall() 
+    photoId = request.args.get("photoId")
+    searchString = request.args.get("search")
+    
+    if searchString:
+        SELECT_COMMENTS_SEARCH = "SELECT * FROM Comments WHERE photoId = %s AND CommentText LIKE %s"
+        with db_connection:
+            with db_connection.cursor() as cursor:
+                cursor.execute(SELECT_COMMENTS_SEARCH, (photoId, f"%{searchString}%"))
+                db_result = cursor.fetchall() 
+    else:
+        SELECT_COMMENTS = "SELECT * FROM Comments WHERE photoId = %s"
+        with db_connection:
+            with db_connection.cursor() as cursor:
+                cursor.execute(SELECT_COMMENTS, (photoId,))
+                db_result = cursor.fetchall() 
     
     response = []
     for x in db_result:
