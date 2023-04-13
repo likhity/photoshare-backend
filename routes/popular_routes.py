@@ -30,7 +30,36 @@ def most_popular_tags():
 
     return response
 # TODO: PSB-11
+@app.route("/api/top-10-users", methods=["GET"])
+def top_10_users():
+    # query for top 10 users
+    TOP_10_USERS_QUERY = (
+        """
+        SELECT userId, firstName, lastName, contribution 
+        FROM Users 
+        ORDER BY contribution 
+        DESC LIMIT 10;
+        """)
+    
+    # execute query and retrieve all info related + return to frontend
+    with db_connection:
+        with db_connection.cursor() as cursor:
+            # retrieve top 10 users
+            cursor.execute(TOP_10_USERS_QUERY)
+            top_10_users_list = cursor.fetchall()
 
+    response = []
+
+    for x in top_10_users_list:
+        new_object = {}
+        new_object['userId'] = x[0]
+        new_object['firstName'] = x[1]
+        new_object['lastName'] = x[2]
+        new_object['contributions'] = x[3]
+        response.append(new_object)
+
+    return response
+    
 # TODO: PSB-12
 @app.route("/api/photo-recommendations", methods=['GET'])
 @auth_required
