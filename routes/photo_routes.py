@@ -323,21 +323,50 @@ def get_photos():
 # TODO: PSB-13
 @app.route("/api/photo")
 def get_photoInfo():
-    SELECT_PHOTO_QUERY = "SELECT * FROM Photos WHERE PhotoId = %s;"
-    photo = request.args.get("photoId")
+    SELECT_PHOTO_QUERY = (
+        """
+        SELECT 
+            Photos.PhotoId,
+            Photos.caption,
+            Photos.albumId,
+            Photos.filePath,
+            Users.firstName,
+            Users.lastName,
+            Users.userId AS ownerId,
+            COUNT(Likes.PhotoId) AS numLikes
+        FROM 
+            Photos
+            JOIN Albums ON Photos.albumId = Albums.albumId
+            JOIN Users ON Albums.ownerId = Users.userId
+            LEFT JOIN Likes ON Photos.PhotoId = Likes.PhotoId
+        WHERE 
+            Photos.PhotoId = %s
+        GROUP BY 
+            Photos.PhotoId,
+            Photos.caption,
+            Photos.albumId,
+            Photos.filePath,
+            Users.firstName,
+            Users.lastName,
+            Users.userId;
+        """
+    )
+    photoId = request.args.get("photoId")
     with db_connection:
         with db_connection.cursor() as cursor:
-            cursor.execute(SELECT_PHOTO_QUERY, (photo,))
+            cursor.execute(SELECT_PHOTO_QUERY, (photoId,))
             result = cursor.fetchone()
     
-    response = []
-    new_element = {}
-    new_element["photoId"] = result[0]
-    new_element["caption"] = result[1]
-    new_element["albumId"] = result[2]
-    new_element["URL"] = result[3]
-    response.append(new_element)
-
+    response = {}
+    response["photoId"] = result[0]
+    response["caption"] = result[1]
+    response["albumId"] = result[2]
+    response["url"] = result[3]
+    response["firstName"] = result[4]
+    response["lastName"] = result[5]
+    response["ownerId"] = result[6]
+    response["numLikes"] = result[7]
+    
     return response
     
 
