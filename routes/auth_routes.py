@@ -73,7 +73,7 @@ def login():
             
     if result and bcrypt.checkpw(bytes(password, 'utf-8'), bytes(result[2], 'utf-8')):
         # A JWT is valid for 8 hours since first creation
-        jwtMaxAge = 8 * 60 * 60 * 1000
+        jwtMaxAge = 8 * 60 * 60
         
         token = jwt.encode({
             'user': result[0],
