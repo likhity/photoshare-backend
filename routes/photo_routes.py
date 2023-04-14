@@ -30,9 +30,9 @@ def photo_upload(decoded_token):
     
     INSERT_PHOTO = (
         """
-        INSERT INTO Photos (albumId, caption, filePath)
-        VALUES ((SELECT albumId FROM Albums WHERE ownerId = %s AND AlbumName = %s), %s, %s)
-        RETURNING photoId, caption, albumId, filePath;
+        INSERT INTO Photos (albumId, caption, filePath, dateOfCreation)
+        VALUES ((SELECT albumId FROM Albums WHERE ownerId = %s AND AlbumName = %s), %s, %s, %s)
+        RETURNING photoId, caption, albumId, filePath, dateOfCreation;
         """
     )
     
@@ -41,10 +41,11 @@ def photo_upload(decoded_token):
     )
     
     url = "https://%s.s3.us-west-1.amazonaws.com/%s" % (bucket_name, new_filename)
+    current_day = datetime.date.today()
     
     with db_connection:
         with db_connection.cursor() as cursor:
-            cursor.execute(INSERT_PHOTO, (userId, albumName, caption, url))
+            cursor.execute(INSERT_PHOTO, (userId, albumName, caption, url, current_day))
             result = cursor.fetchone()
             # update the user's contribution score
             cursor.execute(UPDATE_CONTRIBUTION, (userId,))
@@ -53,7 +54,8 @@ def photo_upload(decoded_token):
             "photoId": result[0], 
             "caption": result[1], 
             "albumId": result[2], 
-            "url": result[3]
+            "url": result[3],
+            "dateOfCreation": result[4]
            }, 201
 
 # TODO: PSB-5
