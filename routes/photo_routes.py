@@ -425,26 +425,39 @@ def get_comments():
     searchString = request.args.get("search")
     
     if searchString:
-        SELECT_COMMENTS_SEARCH = "SELECT * FROM Comments WHERE photoId = %s AND CommentText LIKE %s"
+        SELECT_COMMENTS_SEARCH = (
+            """
+            SELECT Comments.*, Users.firstName, Users.lastName
+            FROM Comments JOIN Users ON Comments.commenterId = Users.userId
+            WHERE photoId = %s AND CommentText LIKE %s
+            """
+        )
         with db_connection:
             with db_connection.cursor() as cursor:
                 cursor.execute(SELECT_COMMENTS_SEARCH, (photoId, f"%{searchString}%"))
                 db_result = cursor.fetchall() 
     else:
-        SELECT_COMMENTS = "SELECT * FROM Comments WHERE photoId = %s"
+        SELECT_COMMENTS = (
+            """
+            SELECT Comments.*, Users.firstName, Users.lastName
+            FROM Comments JOIN Users ON Comments.commenterId = Users.userId
+            WHERE photoId = %s
+            """
+        )
         with db_connection:
             with db_connection.cursor() as cursor:
                 cursor.execute(SELECT_COMMENTS, (photoId,))
-                db_result = cursor.fetchall() 
+                db_result = cursor.fetchall()
     
     response = []
     for x in db_result:
         new_element = {}
-        new_element["CommentId"] = x[0]
-        new_element["CommentText"] = x[1]
+        new_element["commentId"] = x[0]
+        new_element["commentText"] = x[1]
         new_element["commenterId"] = x[2]
-        new_element["PhotoId"] = x[3]
+        new_element["photoId"] = x[3]
         new_element["dateOfCreation"] = x[4]
+        new_element["commenterName"] = x[5] + " " + x[6]
         response.append(new_element)
 
     return response
