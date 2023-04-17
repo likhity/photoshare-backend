@@ -12,6 +12,7 @@ def photo_upload(decoded_token):
     
     caption = request.args.get('caption')
     albumName = request.args.get('albumName')
+    tags = request.args.get('tags')
     
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
@@ -49,6 +50,19 @@ def photo_upload(decoded_token):
             result = cursor.fetchone()
             # update the user's contribution score
             cursor.execute(UPDATE_CONTRIBUTION, (userId,))
+    
+    if tags:
+        tags = tags.split(',')
+        INSERT_TAG = (
+            """
+            INSERT INTO Tags (Tag, PhotoId)
+            VALUES (%s, %s);
+            """
+        )
+        for tag in tags:
+            with db_connection:
+                with db_connection.cursor() as cursor:
+                    cursor.execute(INSERT_TAG, (tag, result[0]))
     
     return { 
             "photoId": result[0], 
