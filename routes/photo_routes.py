@@ -349,12 +349,14 @@ def get_photoInfo():
             Users.firstName,
             Users.lastName,
             Users.userId AS ownerId,
-            COUNT(Likes.PhotoId) AS numLikes
+            COUNT(Likes.PhotoId) AS numLikes,
+            ARRAY_AGG(DISTINCT(Tags.Tag)) AS tags
         FROM 
             Photos
             JOIN Albums ON Photos.albumId = Albums.albumId
             JOIN Users ON Albums.ownerId = Users.userId
             LEFT JOIN Likes ON Photos.PhotoId = Likes.PhotoId
+            LEFT JOIN Tags ON Photos.PhotoId = Tags.PhotoId
         WHERE 
             Photos.PhotoId = %s
         GROUP BY 
@@ -382,6 +384,7 @@ def get_photoInfo():
     response["lastName"] = result[5]
     response["ownerId"] = result[6]
     response["numLikes"] = result[7]
+    response["tags"] = result[8]
     
     return response
     
