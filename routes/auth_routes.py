@@ -32,7 +32,13 @@ def create_user():
     # so we must turn the bytes back into a string 
     # that we can insert into database
     hashed_password = hash_bytes.decode()
-        
+    
+    SELECT_USER_QUERY = (
+        """
+            SELECT email FROM Users WHERE email = %s;
+        """
+    )
+    
     INSERT_USER_QUERY = (
         """
             INSERT INTO Users (firstName, lastName, email, homeTown, dateOfBirth, password, gender)
@@ -40,9 +46,18 @@ def create_user():
             RETURNING userId;
         """
     )
+    
     db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
+            # check if the email already exists
+            cursor.execute(SELECT_USER_QUERY, (email,))
+            existing_user = cursor.fetchone()
+            
+            # if the email already exists, return an error response
+            if existing_user is not None:
+                return jsonify({"message": "Email already exists."}), 409
+            
             # insert the new user with the HASHED password
             cursor.execute(INSERT_USER_QUERY, (firstName, lastName, email, homeTown, dateOfBirth, hashed_password, gender))
             userId = cursor.fetchone()[0]
@@ -59,6 +74,7 @@ def create_user():
     response = jsonify({ "id": userId, "message": "User created." })
     response.set_cookie(key="jwt", value=token, max_age=jwtMaxAge, httponly=True)
     return response, 201
+
 
 @app.route("/api/login", methods=['POST'])
 def login():
