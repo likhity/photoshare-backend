@@ -46,23 +46,27 @@ def create_user():
             RETURNING userId;
         """
     )
-    
+    lockedRelased = False
     db_lock.acquire()
-    with db_connection:
-        with db_connection.cursor() as cursor:
-            # check if the email already exists
-            cursor.execute(SELECT_USER_QUERY, (email,))
-            existing_user = cursor.fetchone()
-            
-            # if the email already exists, return an error response
-            if existing_user is not None:
-                db_lock.release()
-                return jsonify({"message": "Email already exists."}), 409
-            
-            # insert the new user with the HASHED password
-            cursor.execute(INSERT_USER_QUERY, (firstName, lastName, email, homeTown, dateOfBirth, hashed_password, gender))
-            userId = cursor.fetchone()[0]
-    db_lock.release()
+    try:
+        with db_connection:
+            with db_connection.cursor() as cursor:
+                # check if the email already exists
+                cursor.execute(SELECT_USER_QUERY, (email,))
+                existing_user = cursor.fetchone()
+                
+                # if the email already exists, return an error response
+                if existing_user is not None:
+                    db_lock.release()
+                    lockedRelased = True
+                    return jsonify({"message": "Email already exists."}), 409
+                
+                # insert the new user with the HASHED password
+                cursor.execute(INSERT_USER_QUERY, (firstName, lastName, email, homeTown, dateOfBirth, hashed_password, gender))
+                userId = cursor.fetchone()[0]
+    finally:
+        if lockedRelased is False:
+            db_lock.release()
     
     # A JWT is valid for 8 hours since first creation
     jwtMaxAge = 8 * 60 * 60 * 1000
