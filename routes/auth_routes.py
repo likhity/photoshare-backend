@@ -56,6 +56,7 @@ def create_user():
             
             # if the email already exists, return an error response
             if existing_user is not None:
+                db_lock.release()
                 return jsonify({"message": "Email already exists."}), 409
             
             # insert the new user with the HASHED password
