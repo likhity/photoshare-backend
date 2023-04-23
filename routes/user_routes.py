@@ -1,4 +1,4 @@
-from main import app, db_connection, auth_required
+from main import app, db_connection, auth_required, db_lock
 from flask import request, jsonify
 import re
 
@@ -54,10 +54,12 @@ def search_users():
                 WHERE firstName LIKE %s
             """)
 
+            db_lock.acquire()
             with db_connection:
                 with db_connection.cursor() as cursor:
                     cursor.execute(FIRSTNAME_SUBSTR_QUERY, (firstName.title()+'%',)) #.title() sets string format to first letter capalized and rest lowercase
                     users_firstName_substr = cursor.fetchall()
+            db_lock.release()
             
             #generate response
             response = []
@@ -84,10 +86,12 @@ def search_users():
                 WHERE firstName LIKE %s;
                 """
 
+            db_lock.acquire()
             with db_connection:
                 with db_connection.cursor() as cursor:
                     cursor.execute(EXACT_MATCH_FIRSTNAME, (firstName.title(),)) #.title() sets string format to first letter capalized and rest lowercase
                     exact_first = cursor.fetchall()
+            db_lock.release()
             
             #generate response
             response = []
@@ -111,10 +115,12 @@ def search_users():
                 WHERE firstName = %s AND lastName LIKE %s;
             """)
 
+            db_lock.acquire()
             with db_connection:
                 with db_connection.cursor() as cursor:
                     cursor.execute(EXACT_FIRST_SUBSTR_LAST, (firstName.title(), lastName.title()+'%'))
                     exact_first_substr_last = cursor.fetchall()
+            db_lock.release()
             
             #generate response
             response = []
@@ -135,10 +141,12 @@ def search_users():
                 WHERE firstName = %s AND lastName = %s;
             """)
 
+            db_lock.acquire()
             with db_connection:
                 with db_connection.cursor() as cursor:
                     cursor.execute(EXACT_FIRST_EXACT_LAST, (firstName.title(), lastName.title()))
                     exact_first_exact_last = cursor.fetchall()
+            db_lock.release()
             
             #generate response
             response = []
@@ -159,10 +167,12 @@ def search_users():
         WHERE firstName = %s AND lastName = %s AND CAST(userId AS TEXT) LIKE %s;
     """)
 
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(EXACT_FIRST_EXACT_LAST_SUBSTR_ID, (firstName.title(), lastName.title(), id+'%'))
             exact_first_exact_last_substr_id = cursor.fetchall()
+    db_lock.release()
     
     #generate response
     response = []
@@ -185,10 +195,12 @@ def search_users():
 def get_user_info():
     SELECT_USER_QUERY = "SELECT * FROM Users WHERE userId = %s"
     user = request.args.get("userId")
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_USER_QUERY, (user,))
             result = cursor.fetchone()
+    db_lock.release()
 
     new_element = {}
     new_element["userId"] = result[0]

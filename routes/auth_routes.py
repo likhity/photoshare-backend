@@ -1,4 +1,4 @@
-from main import app, db_connection, JWT_SECRET_KEY, auth_required
+from main import app, db_connection, db_lock, JWT_SECRET_KEY, auth_required
 import time
 import jwt
 from datetime import datetime, timedelta
@@ -40,11 +40,13 @@ def create_user():
             RETURNING userId;
         """
     )
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             # insert the new user with the HASHED password
             cursor.execute(INSERT_USER_QUERY, (firstName, lastName, email, homeTown, dateOfBirth, hashed_password, gender))
             userId = cursor.fetchone()[0]
+    db_lock.release()
     
     # A JWT is valid for 8 hours since first creation
     jwtMaxAge = 8 * 60 * 60 * 1000
@@ -65,11 +67,13 @@ def login():
     password = form_data['password']
     
     SELECT_USER_QUERY = "SELECT userId, email, password FROM Users WHERE email = %s;"
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_USER_QUERY, (email,))
             # result will be an array like so: [userId, email, password]
             result = cursor.fetchone()
+    db_lock.release()
             
     if result and bcrypt.checkpw(bytes(password, 'utf-8'), bytes(result[2], 'utf-8')):
         # A JWT is valid for 8 hours since first creation

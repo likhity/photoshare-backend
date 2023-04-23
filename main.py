@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from flask import request, Flask
 from functools import wraps
 import inspect
+from threading import Lock
 
 # load_dotenv() loads all environment 
 # variables from .env file so we can
@@ -18,6 +19,8 @@ app = Flask(__name__)
 db_url = os.getenv('DATABASE_URL')
 # connect to database
 db_connection = psycopg2.connect(db_url)
+
+db_lock = Lock()
 
 CREATE_TABLES = (
     """
@@ -95,10 +98,12 @@ CREATE_TABLES = (
     """
 )
 
+db_lock.acquire()
 with db_connection:
     with db_connection.cursor() as cursor:
         cursor.execute(CREATE_TABLES)
-        
+db_lock.release()
+
 JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
 def auth_required(func):

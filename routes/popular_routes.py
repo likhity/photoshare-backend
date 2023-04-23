@@ -1,4 +1,4 @@
-from main import app, db_connection, auth_required
+from main import app, db_connection, auth_required, db_lock
 from flask import request
 
 # TODO: PSB-10
@@ -13,12 +13,14 @@ def most_popular_tags():
         ORDER BY COUNT(*) DESC LIMIT 50;
         """)
     
+    db_lock.acquire()
     # execute query and retrieve all info related + return to frontend
     with db_connection:
         with db_connection.cursor() as cursor:
             # retrieve most popular tags
             cursor.execute(MOST_POPULAR_TAGS_QUERY)
             most_popular_tags_list = cursor.fetchall()
+    db_lock.release()
 
     response = []
 
@@ -41,12 +43,14 @@ def top_10_users():
         DESC LIMIT 10;
         """)
     
+    db_lock.acquire()
     # execute query and retrieve all info related + return to frontend
     with db_connection:
         with db_connection.cursor() as cursor:
             # retrieve top 10 users
             cursor.execute(TOP_10_USERS_QUERY)
             top_10_users_list = cursor.fetchall()
+    db_lock.release()
 
     response = []
 
@@ -76,12 +80,14 @@ def photo_recommendations(decoded_token):
         WHERE Tag IN (SELECT Tag FROM Tags WHERE PhotoId IN (SELECT PhotoId FROM Photos WHERE albumId IN (SELECT albumId FROM Albums WHERE ownerId = %s))) GROUP BY PhotoId ORDER BY numTags DESC LIMIT 5) AS result)
         """)
     
+    db_lock.acquire()
     # execute query and retrieve all info related + return to frontend
     with db_connection:
         with db_connection.cursor() as cursor:
             # retrieve photo recommendations
             cursor.execute(PHOTO_RECOMMENDATIONS_QUERY, (decoded_token["user"],))
             photo_recommendations_list = cursor.fetchall()
+    db_lock.release()
 
     response = []
 

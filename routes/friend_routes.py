@@ -1,4 +1,4 @@
-from main import app, db_connection, auth_required
+from main import app, db_connection, auth_required, db_lock
 
 from flask import request, jsonify
 import datetime #needed for friendship dates
@@ -18,12 +18,14 @@ def suggested_friends(decoded_token):
         ORDER BY result.numFriends DESC;
         """)
     
+    db_lock.acquire()
     # execute query and retrieve all info related + return to frontend
     with db_connection:
         with db_connection.cursor() as cursor:
             # retrieve suggested friends (based on ids)
             cursor.execute(SUGGESTED_FRIENDS_QUERY, (decoded_token["user"],))
             suggested_friends_list = cursor.fetchall()
+    db_lock.release()
 
 
     response = []
@@ -59,10 +61,12 @@ def add_friend(decoded_token):
     current_day = datetime.date.today()                                 #2019-07-25
 
     # execute query and retrieve all info related + return to frontend
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             # retrieve suggested friends (based on ids)
             cursor.execute(CREATE_FRIENDSHIP_QUERY, (userID, friendID, current_day))
+    db_lock.release()
 
     return  f"{userID} added Friend {friendID} was added on {current_day}", 201
 
@@ -75,20 +79,31 @@ def friends():
     # query for getting all user friends
     GET_ALL_FRIENDS = (
         """
-            SELECT userId, firstName, lastName 
-            FROM Users 
-            WHERE userId IN (SELECT friendId FROM Friends WHERE userId = %s);
-        """)
+        SELECT 
+            Users.userId, 
+            Users.firstName, 
+            Users.lastName, 
+            Friends.dateOfFriendship
+        FROM 
+            Friends 
+            JOIN Users ON Friends.friendId = Users.userId
+        WHERE 
+            Friends.userId = %s;
+        """
+    )
     
     # get userID from url
     userID = request.args.get("userId")
     
     # execute query and retrieve all userIds friends
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             # retrieve all friends
-            cursor.execute(GET_ALL_FRIENDS, (userID))
+            cursor.execute(GET_ALL_FRIENDS, (userID,))
             all_friends = cursor.fetchall()
+            cursor.close()
+    db_lock.release()
 
 
     response = []
@@ -98,6 +113,7 @@ def friends():
         new_object['userId'] = x[0]
         new_object['firstName'] = x[1]
         new_object['lastName'] = x[2]
+        new_object['since'] = x[3]
         response.append(new_object)
     return response, 200
 

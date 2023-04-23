@@ -1,4 +1,4 @@
-from main import app, db_connection, auth_required
+from main import app, db_connection, auth_required, db_lock
 from flask import request, jsonify
 from datetime import date
 import boto3
@@ -9,10 +9,12 @@ def get_album():
     SELECT_ALBUM_QUERY = "SELECT albumId, AlbumName, dateOfCreation FROM Albums WHERE ownerId = %s AND AlbumName = %s"
     user = request.args.get("userId")
     name = request.args.get("albumName")
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_ALBUM_QUERY, (user, name,))
             result = cursor.fetchone()
+    db_lock.release()
     new_element = {}
     new_element["albumId"] = result[0]
     new_element["albumName"] = result[1]
@@ -26,10 +28,12 @@ def get_album():
 def get_albums():
     SELECT_USER_QUERY = "SELECT albumId, AlbumName, dateOfCreation FROM Albums WHERE ownerId = %s"
     s = request.args.get("userId")
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_USER_QUERY, (s,))
             db_result = cursor.fetchall() 
+    db_lock.release()
     
     response = []
     for x in db_result:
@@ -53,11 +57,13 @@ def create_album(decoded_token):
     VALUES (%s, %s, %s)
     RETURNING albumId;
     """
-
+    
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(INSERT_ALBUM_QUERY, (name, ownerId, dateOfCreation,))
             albumId = cursor.fetchone()[0]
+    db_lock.release()
     
     return jsonify({ "albumid": albumId, "message": "Album created." })
 
@@ -76,10 +82,12 @@ def delete_album(decoded_token):
         """
     )
     
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_PHOTO, (userId, albumName))
             photos_to_delete = cursor.fetchall()
+    db_lock.release()
     
     s3 = boto3.client("s3")
     bucket_name = "photoshare-app"
@@ -97,8 +105,10 @@ def delete_album(decoded_token):
         """
     )
     
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(DELETE_ALBUM, (userId, albumName))
+    db_lock.release()
     
     return { "message": "Album deleted successfully." }

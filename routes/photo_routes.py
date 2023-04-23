@@ -1,4 +1,4 @@
-from main import app, db_connection, auth_required
+from main import app, db_connection, auth_required, db_lock
 from flask import request, jsonify
 import boto3
 import uuid
@@ -44,12 +44,14 @@ def photo_upload(decoded_token):
     url = "https://%s.s3.us-west-1.amazonaws.com/%s" % (bucket_name, new_filename)
     current_day = datetime.date.today()
     
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(INSERT_PHOTO, (userId, albumName, caption, url, current_day))
             result = cursor.fetchone()
             # update the user's contribution score
             cursor.execute(UPDATE_CONTRIBUTION, (userId,))
+    db_lock.release()
     
     if tags:
         tags = tags.split(',')
@@ -60,9 +62,11 @@ def photo_upload(decoded_token):
             """
         )
         for tag in tags:
+            db_lock.acquire()
             with db_connection:
                 with db_connection.cursor() as cursor:
                     cursor.execute(INSERT_TAG, (tag, result[0]))
+            db_lock.release()
     
     return { 
             "photoId": result[0], 
@@ -83,10 +87,12 @@ def like_photo(decoded_token):
     VALUES (%s, %s)
     """
 
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             # insert the new user with the HASHED password
             cursor.execute(INSERT_LIKE_QUERY, (userId, photoId,))
+    db_lock.release()
     
     return jsonify({ "message": "Succeeded." })
 
@@ -106,11 +112,13 @@ def add_comment(decoded_token):
     UPDATE_CONTRIBUTION = """UPDATE Users SET contribution = contribution + 1 WHERE userId = %s;
     """
 
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             # insert the new user with the HASHED password
             cursor.execute(INSERT_COMMENT_QUERY, (comment, userId, photoId, current_day,))
             cursor.execute(UPDATE_CONTRIBUTION, (userId,))
+    db_lock.release()
     
     return jsonify({ "message": "Succeeded." })
 # TODO: PSB-7
@@ -131,12 +139,14 @@ def get_photos():
             ORDER BY dateOfCreation DESC;
             """
         
+        db_lock.acquire()
         # execute query and return 
         with db_connection:
             with db_connection.cursor() as cursor:
                 # retrieve ALL photos
                 cursor.execute(ALL_PHOTO_QUERIES)
                 all_photos = cursor.fetchall()
+        db_lock.release()
         
         response = []
 
@@ -175,17 +185,18 @@ def get_photos():
                  WHERE ownerId = %s);
             """  
         
+        db_lock.acquire()
         #execute query w/userId and return
         with db_connection:
             with db_connection.cursor() as cursor:
                 # retrieve ALL photos given userId
                 cursor.execute(ALL_PHOTO_GIVEN_ID_QUERY, (userId,))
                 all_photos_given_Id = cursor.fetchall()
-
+        db_lock.release()
         
         response = []
 
-        for x in  all_photos_given_Id:
+        for x in all_photos_given_Id:
 
             new_object = {}
             new_object['photoid'] = x[0]
@@ -221,11 +232,13 @@ def get_photos():
         # get all tags into tags_array
         tags_array = all_tags.split(",")
 
+        db_lock.acquire()
         with db_connection:
             with db_connection.cursor() as cursor:
                 # retrieve all photos with given tags
                 cursor.execute(TAG_QUERY, (tags_array,))
                 all_photos_given_tags = cursor.fetchall()
+        db_lock.release()
 
         response = []
 
@@ -266,11 +279,13 @@ def get_photos():
         # get array of tags to search
         tags_array = all_tags.split(",")
 
+        db_lock.acquire()
         with db_connection:
             with db_connection.cursor() as cursor:
                 # retrieve all photos with given tags and userId
                 cursor.execute(TAG_PLUS_USERID_QUERY, (userId, tags_array))
                 all_photos_given_tags_and_userId = cursor.fetchall()
+        db_lock.release()
         
         #create appropriate response
         response = []
@@ -300,13 +315,13 @@ def get_photos():
         INNER JOIN users u ON a.ownerid = u.userid
         WHERE a.albumname = %s AND u.userid = %s;"""
 
-        
+        db_lock.acquire()
         with db_connection:
             with db_connection.cursor() as cursor:
                 # retrieve all photos with given tags
                 cursor.execute(USERID_AND_ALBUMNAME_QUERY, (albumName, userId))
                 all_photos_given_albumName_and_userId = cursor.fetchall()
-        
+        db_lock.release()
 
         #create appropriate response
         response = []
@@ -370,10 +385,13 @@ def get_photoInfo():
         """
     )
     photoId = request.args.get("photoId")
+    
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_PHOTO_QUERY, (photoId,))
             result = cursor.fetchone()
+    db_lock.release()
     
     response = {}
     response["photoId"] = result[0]
@@ -404,10 +422,12 @@ def delete_photo(decoded_token):
         """
     )
     
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_PHOTO, (userId, photoId))
             result = cursor.fetchone()
+    db_lock.release()
     
     if not result:
         return { "message": f"Failed. You do not own the photo with id {photoId}." }, 400
@@ -429,10 +449,12 @@ def delete_photo(decoded_token):
         """
     )
     
+    db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(DELETE_PHOTO, (photoId, userId))
-            
+    db_lock.release()
+    
     return { "message": "Photo deleted successfully." }
     
 # TODO: PSB-24
@@ -449,10 +471,12 @@ def get_comments():
             WHERE photoId = %s AND CommentText LIKE %s
             """
         )
+        db_lock.acquire()
         with db_connection:
             with db_connection.cursor() as cursor:
                 cursor.execute(SELECT_COMMENTS_SEARCH, (photoId, f"%{searchString}%"))
                 db_result = cursor.fetchall() 
+        db_lock.release()
     else:
         SELECT_COMMENTS = (
             """
@@ -461,11 +485,13 @@ def get_comments():
             WHERE photoId = %s
             """
         )
+        db_lock.acquire()
         with db_connection:
             with db_connection.cursor() as cursor:
                 cursor.execute(SELECT_COMMENTS, (photoId,))
                 db_result = cursor.fetchall()
-    
+        db_lock.release()
+        
     response = []
     for x in db_result:
         new_element = {}
