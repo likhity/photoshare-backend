@@ -452,9 +452,7 @@ def get_photoInfo(decoded_token = None):
     response["numLikes"] = num_likes
     response["tags"] = result[8]
     response["dateOfCreation"] = result[9]
-    
-    if decoded_token and user_liked:
-        response['liked'] = True
+    response['liked'] = decoded_token and user_liked
     
     return response
     

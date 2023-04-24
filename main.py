@@ -141,6 +141,8 @@ def auth_required_soft(func):
                     return func(*args, **kwargs)
             except:
                 return func(*args, **kwargs)
+        else:
+            return func(*args, **kwargs)
         
     return decorated
 
