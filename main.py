@@ -126,6 +126,24 @@ def auth_required(func):
 
     return decorated
 
+def auth_required_soft(func):
+    @wraps(func)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('jwt')
+
+        if token:
+            try:
+                decoded = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+                
+                if 'decoded_token' in inspect.signature(func).parameters:
+                    return func(decoded, *args, **kwargs)
+                else:
+                    return func(*args, **kwargs)
+            except:
+                return func(*args, **kwargs)
+        
+    return decorated
+
 import routes.auth_routes
 import routes.friend_routes
 import routes.photo_routes
