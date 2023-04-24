@@ -1,4 +1,4 @@
-from main import app, db_connection, auth_required, db_lock
+from main import app, db_connection, auth_required, auth_required_soft, db_lock
 from flask import request, jsonify
 import boto3
 import uuid
@@ -88,15 +88,36 @@ def like_photo(decoded_token):
     """
 
     db_lock.acquire()
-    with db_connection:
-        with db_connection.cursor() as cursor:
-            # insert the new user with the HASHED password
-            cursor.execute(INSERT_LIKE_QUERY, (userId, photoId,))
-    db_lock.release()
+    try:
+        with db_connection:
+            with db_connection.cursor() as cursor:
+                # insert the new user with the HASHED password
+                cursor.execute(INSERT_LIKE_QUERY, (userId, photoId,))
+    finally:
+        db_lock.release()
     
     return jsonify({ "message": "Succeeded." })
 
+@app.delete("/api/like-photo")
+@auth_required
+def delete_like_photo(decoded_token):
+    photoId = request.args.get("photoId")
+    userId = decoded_token["user"]
+    
+    DELETE_LIKE_QUERY = """
+    DELETE FROM Likes WHERE userid = %s AND photoid = %s;
+    """
 
+    db_lock.acquire()
+    try:
+        with db_connection:
+            with db_connection.cursor() as cursor:
+                # insert the new user with the HASHED password
+                cursor.execute(DELETE_LIKE_QUERY, (userId, photoId,))
+    finally:
+        db_lock.release()
+    
+    return jsonify({ "message": "Succeeded." })
 
 # TODO: PSB-23
 @app.route("/api/add-comment", methods=['POST'])
@@ -353,7 +374,12 @@ def get_photos():
 
 # TODO: PSB-13
 @app.route("/api/photo")
-def get_photoInfo():
+@auth_required_soft
+def get_photoInfo(decoded_token = None):
+
+    if decoded_token:
+        userId = decoded_token['user']
+    
     SELECT_PHOTO_QUERY = (
         """
         SELECT 
@@ -365,7 +391,8 @@ def get_photoInfo():
             Users.lastName,
             Users.userId AS ownerId,
             COUNT(Likes.PhotoId) AS numLikes,
-            ARRAY_AGG(DISTINCT(Tags.Tag)) AS tags
+            ARRAY_AGG(DISTINCT(Tags.Tag)) AS tags,
+            Photos.dateOfCreation
         FROM 
             Photos
             JOIN Albums ON Photos.albumId = Albums.albumId
@@ -386,11 +413,32 @@ def get_photoInfo():
     )
     photoId = request.args.get("photoId")
     
+    SELECT_LIKES_QUERY = (
+        """
+        SELECT COUNT(*)
+        FROM Likes
+        WHERE photoid = %s;
+        """
+    )
+    
+    IS_USER_LIKED = (
+        """
+        SELECT COUNT(*)
+        FROM Likes
+        WHERE photoId = %s AND userId = %s;
+        """
+    )
+    
     db_lock.acquire()
     with db_connection:
         with db_connection.cursor() as cursor:
             cursor.execute(SELECT_PHOTO_QUERY, (photoId,))
             result = cursor.fetchone()
+            cursor.execute(SELECT_LIKES_QUERY, (photoId,))
+            num_likes = cursor.fetchone()[0]
+            if decoded_token:
+                cursor.execute(IS_USER_LIKED, (photoId, userId))
+                user_liked = cursor.fetchone()[0] > 0
     db_lock.release()
     
     response = {}
@@ -401,8 +449,12 @@ def get_photoInfo():
     response["firstName"] = result[4]
     response["lastName"] = result[5]
     response["ownerId"] = result[6]
-    response["numLikes"] = result[7]
+    response["numLikes"] = num_likes
     response["tags"] = result[8]
+    response["dateOfCreation"] = result[9]
+    
+    if decoded_token and user_liked:
+        response['liked'] = True
     
     return response
     

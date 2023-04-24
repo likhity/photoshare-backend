@@ -62,11 +62,13 @@ def add_friend(decoded_token):
 
     # execute query and retrieve all info related + return to frontend
     db_lock.acquire()
-    with db_connection:
-        with db_connection.cursor() as cursor:
-            # retrieve suggested friends (based on ids)
-            cursor.execute(CREATE_FRIENDSHIP_QUERY, (userID, friendID, current_day))
-    db_lock.release()
+    try:
+        with db_connection:
+            with db_connection.cursor() as cursor:
+                # retrieve suggested friends (based on ids)
+                cursor.execute(CREATE_FRIENDSHIP_QUERY, (userID, friendID, current_day))
+    finally:
+        db_lock.release()
 
     return  f"{userID} added Friend {friendID} was added on {current_day}", 201
 
