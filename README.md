@@ -1,6 +1,6 @@
 # photoshare-backend
 
-This full-stack project is a photo-sharing application where users can create albums, post photos, tag their photos, view others' photos, like, comment, etc.
+This full-stack project, titled PhotoShare, is a photo-sharing application where users can create albums, post photos, tag their photos, view others' photos, like, comment, etc.
 
 It was built by a team of 4: likhity, JoaquinUribeAcosta, Abhig2002, and ahixson1.
 
