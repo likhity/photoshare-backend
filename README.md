@@ -12,6 +12,8 @@ The repository for the front-end, built with React and React Router, can be foun
 A video demonstration of the entire application can be found here:
 [https://youtu.be/VcRiQg1yjxo](https://youtu.be/VcRiQg1yjxo)
 
+The content below can be ignored, it was used to coordinate the team during application development.
+
 ## Steps To Setup
 #### 1. Clone the project like so:
   ```bash
