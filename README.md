@@ -1,5 +1,11 @@
 # photoshare-backend
 
+The repository for the front-end, built with React and React Router, can be found at this link:
+[https://github.com/likhity/photoshare-frontend](https://github.com/likhity/photoshare-frontend)
+
+A video demonstration of the entire application can be found here:
+[https://youtu.be/VcRiQg1yjxo](https://youtu.be/VcRiQg1yjxo)
+
 ## Steps To Setup
 #### 1. Clone the project like so:
   ```bash
