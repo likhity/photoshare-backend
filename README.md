@@ -1,5 +1,11 @@
 # photoshare-backend
 
+This full-stack project is a photo-sharing application where users can create albums, post photos, tag their photos, view others' photos, like, comment, etc.
+
+It was built by a team of 4: likhity, JoaquinUribeAcosta, Abhig2002, and ahixson1.
+
+This repository, which contains the code for the backend API, was built using Flask and PostgreSQL, with authentication done using JSON Web Tokens. User photo uploads are stored using AWS S3.
+
 The repository for the front-end, built with React and React Router, can be found at this link:
 [https://github.com/likhity/photoshare-frontend](https://github.com/likhity/photoshare-frontend)
 
